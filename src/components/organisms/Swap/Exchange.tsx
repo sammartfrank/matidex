@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useMemo, useEffect } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Box, Button, MenuItem, Select, OutlinedInput, InputAdornment, IconButton, Typography } from '@mui/material';
 import { useTheme } from '@mui/styles';
@@ -8,32 +8,31 @@ import { ColorModeContext } from '../../../context';
 
 const Exchange = (): JSX.Element => {
   const [amount, setAmount] = useState(0);
-  const [assetSelected, setAssetSelected] = useState();
-  const theme = useTheme();
+  const [assetSelected, setAssetSelected] = useState<string>('eth');
+  const [balance, setBalance] = useState<number>(0);
   const { connected } = useContext(ColorModeContext);
+  const theme = useTheme();
 
   const matches = useMediaQuery('(min-width:600px)');
-
-  const [assets, setAssets] = useState({
-    eth: {
-      name: 'Ethereum',
-      symbol: 'ETH',
-      balance: '0.122',
-      decimals: 18,
-      icon: 'eth',
-    },
-    btc: {
-      name: 'Bitcoin',
-      symbol: 'BTC',
-      balance: '1.64399',
-      decimals: 8,
-      icon: 'btc',
-    },
-  });
-
-  const getBalance = (asset: string) => {
-    return assets[asset].balance;
-  };
+  const assets = useMemo(
+    () => ({
+      eth: {
+        name: 'Ethereum',
+        symbol: 'ETH',
+        balance: 0.122,
+        decimals: 18,
+        icon: 'eth',
+      },
+      btc: {
+        name: 'Bitcoin',
+        symbol: 'BTC',
+        balance: 1.64399,
+        decimals: 8,
+        icon: 'btc',
+      },
+    }),
+    []
+  );
 
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setAssetSelected(event.target.value as string);
@@ -41,6 +40,15 @@ const Exchange = (): JSX.Element => {
   const handleAmountChange = (event: React.ChangeEvent<{ value: number }>) => {
     setAmount(event.target.value as number);
   };
+  const handleMax = () => {
+    const [key, val] = Object.entries(assets).find(([key, value]) => key === assetSelected);
+    setAmount(val.balance);
+  };
+
+  useEffect(() => {
+    const asset = assets[assetSelected];
+    setBalance(parseFloat(asset.balance));
+  }, [connected]);
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
@@ -58,7 +66,7 @@ const Exchange = (): JSX.Element => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <label htmlFor='amount'>Amount</label>
             <Typography variant='body1' sx={{ color: theme.palette.ash.darker }}>
-              Balance: {assetSelected ? getBalance(assetSelected) : null}
+              Balance: {assetSelected ? balance : null}
             </Typography>
           </Box>
           <OutlinedInput
@@ -69,7 +77,7 @@ const Exchange = (): JSX.Element => {
             onChange={handleAmountChange}
             endAdornment={
               <InputAdornment position='end'>
-                <IconButton onClick={() => setAmount(assets[assetSelected].balance)} edge='end' disabled={!connected}>
+                <IconButton onClick={handleMax} edge='end' disabled={!connected || !assetSelected}>
                   Max
                 </IconButton>
               </InputAdornment>
