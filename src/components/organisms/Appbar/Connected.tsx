@@ -51,7 +51,7 @@ const Connected = () => {
   }
 
   const getIcon = (network: string): StaticImageData => {
-    const icons: = {
+    const icons = {
       eth: eth,
       arb: ava,
       oe: poly,
