@@ -1,25 +1,17 @@
-import React, { useState } from 'react';
-import { Formik, Form } from 'formik';
+import React, { useState, useContext } from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Box, Button, MenuItem, Select, OutlinedInput, InputAdornment, IconButton, Typography } from '@mui/material';
+import { useTheme } from '@mui/styles';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
-interface formValues {
-  amount: number;
-  asset: string;
-}
 
-interface Ierror {
-  amount: string;
-  asset: string;
-}
+import { ColorModeContext } from '../../../context';
 
-interface ExchangeProps {
-  connected: boolean;
-}
-
-const Exchange = ({ connected }: ExchangeProps): JSX.Element => {
+const Exchange = (): JSX.Element => {
   const [amount, setAmount] = useState(0);
-  const [assetSelected, setAssetSelected] = useState('eth');
+  const [assetSelected, setAssetSelected] = useState();
+  const theme = useTheme();
+  const { connected } = useContext(ColorModeContext);
+
   const matches = useMediaQuery('(min-width:600px)');
 
   const [assets, setAssets] = useState({
@@ -46,12 +38,15 @@ const Exchange = ({ connected }: ExchangeProps): JSX.Element => {
   const handleChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setAssetSelected(event.target.value as string);
   };
+  const handleAmountChange = (event: React.ChangeEvent<{ value: number }>) => {
+    setAmount(event.target.value as number);
+  };
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '2rem', flexWrap: 'wrap' }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: matches ? '35%' : '100%' }}>
           <label htmlFor='asset'>From</label>
-          <Select onChange={handleChange} fullWidth>
+          <Select value={assetSelected} onChange={handleChange} disabled={!connected}>
             {Object.keys(assets).map((key) => (
               <MenuItem key={key} value={key}>
                 {assets[key].name}
@@ -62,23 +57,25 @@ const Exchange = ({ connected }: ExchangeProps): JSX.Element => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: matches ? '55%' : '100%' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <label htmlFor='amount'>Amount</label>
-            <Typography variant='body1'>Balance: {getBalance(assetSelected)}</Typography>
+            <Typography variant='body1' sx={{ color: theme.palette.ash.darker }}>
+              Balance: {assetSelected ? getBalance(assetSelected) : null}
+            </Typography>
           </Box>
           <OutlinedInput
             name='amount'
             inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
             placeholder='Amount'
             value={amount}
-            fullWidth
+            onChange={handleAmountChange}
             endAdornment={
               <InputAdornment position='end'>
-                <IconButton onClick={() => setAmount(assets[assetSelected].balance)} edge='end'>
+                <IconButton onClick={() => setAmount(assets[assetSelected].balance)} edge='end' disabled={!connected}>
                   Max
                 </IconButton>
               </InputAdornment>
             }
           />
-          <small>Max to use all your funds</small>
+          <small style={{ color: theme.palette.ash.darker }}>Max to use all your funds</small>
         </Box>
       </Box>
       <Box sx={{ justifyContent: 'center', display: 'flex', py: 5 }}>
@@ -95,7 +92,7 @@ const Exchange = ({ connected }: ExchangeProps): JSX.Element => {
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: matches ? '35%' : '100%' }}>
             <label htmlFor='asset'>To</label>
-            <Select fullWidth>
+            <Select disabled={!connected}>
               {Object.keys(assets).map((key) => (
                 <MenuItem disabled={key.includes(assetSelected)} key={key} value={key}>
                   {assets[key].name}
@@ -111,7 +108,6 @@ const Exchange = ({ connected }: ExchangeProps): JSX.Element => {
               inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
               placeholder='Amount'
               value={amount}
-              fullWidth
             />
           </Box>
         </Box>

@@ -41,11 +41,13 @@ const useFeatures = () => {
                 },
                 ash: {
                   main: 'rgba(0, 0, 0, 0.05)',
+                  darker: 'rgba(0,0,0,0.5)'
                 },
               }
             : {
                 primary: {
-                  main: '#F148FB',
+                  // turquoise color
+                  main: '#00C9D9',
                 },
                 secondary: {
                   main: '#560A86',
