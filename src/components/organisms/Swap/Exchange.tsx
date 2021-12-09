@@ -45,6 +45,11 @@ const Exchange = (): JSX.Element => {
     setAmount(val.balance);
   };
 
+  const getBalance = (asset: string) => {
+    const [key, val] = Object.entries(assets).find(([key, value]) => key === asset);
+    return val.balance;
+  };
+
   useEffect(() => {
     const asset = assets[assetSelected];
     setBalance(parseFloat(asset.balance));
@@ -66,7 +71,7 @@ const Exchange = (): JSX.Element => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <label htmlFor='amount'>Amount</label>
             <Typography variant='body1' sx={{ color: theme.palette.ash.darker }}>
-              Balance: {assetSelected ? balance : null}
+              Balance: {assetSelected ? getBalance(assetSelected) : null}
             </Typography>
           </Box>
           <OutlinedInput
